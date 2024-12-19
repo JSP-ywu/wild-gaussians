@@ -1537,7 +1537,7 @@ class GaussianModel(nn.Module):
             scale_modifier=scaling_modifier,
             viewmatrix=world_view_transform,
             projmatrix=full_proj_transform,
-            sh_degree=self.active_sh_degree.cpu().item(),
+            sh_degree=int(self.active_sh_degree.cpu().item()),
             campos=camera_center,
             prefiltered=False,
             debug=config.debug,
@@ -1820,6 +1820,7 @@ class WildGaussians(Method):
             embedding_np = appearance_embedding_param.detach().cpu().numpy()
             return {
                 "embedding": embedding_np,
+                "render_output" : self.render(camera, embedding=embedding_np),
                 "metrics": {
                     "psnr": psnrs,
                     "mse": mses,
