@@ -315,11 +315,15 @@ def train_command(
     assert num_iterations is not None, "num_iterations must be set in the config"
     step = 0
     for step in (pbar := tqdm(range(num_iterations), miniters=10, desc="training", disable=debug)):
+        
+        # Training step here
         metrics = method.train_iteration(step)
         step += 1
 
         acc_metrics.update(metrics)
 
+        
+        # Postprocess after each training step
         # Log metrics
         if step % 100 == 0:
             acc_metrics_values = acc_metrics.pop()
