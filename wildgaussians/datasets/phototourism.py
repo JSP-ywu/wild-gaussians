@@ -10,10 +10,10 @@ import numpy as np
 import requests
 from tqdm import tqdm
 
-from ..types import Dataset, EvaluationProtocol, Method, RenderOutput, Iterable
-from ..utils import image_to_srgb
-from ._common import DatasetNotFoundError, single, get_scene_scale, get_default_viewer_transform, dataset_index_select
-from .colmap import load_colmap_dataset
+from wildgaussians.types import Dataset, EvaluationProtocol, Method, RenderOutput, Iterable
+from wildgaussians.utils import image_to_srgb
+from wildgaussians.datasets._common import DatasetNotFoundError, single, get_scene_scale, get_default_viewer_transform, dataset_index_select
+from wildgaussians.datasets.colmap import load_colmap_dataset
 
 
 DATASET_NAME = "phototourism"
@@ -87,31 +87,34 @@ def load_phototourism_dataset(path: Union[Path, str], split: str, use_nerfw_spli
 
 _phototourism_downloads = {
     "brandenburg-gate": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/brandenburg_gate.tar.gz",
-    "buckingham-palace": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/buckingham_palace.tar.gz",
-    "colosseum-exterior": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/colosseum_exterior.tar.gz",
-    "grand-palace-brussels": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/grand_place_brussels.tar.gz",
-    "notre-dame-facade": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/notre_dame_front_facade.tar.gz",
-    "westminster-palace": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/palace_of_westminster.tar.gz",
-    "pantheon-exterior": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/pantheon_exterior.tar.gz",
-    "taj-mahal": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/taj_mahal.tar.gz",
-    "temple-nara": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/temple_nara_japan.tar.gz",
-    "trevi-fountain": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/trevi_fountain.tar.gz",
-    "sacre-coeur": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/sacre_coeur.tar.gz",
+    # "buckingham-palace": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/buckingham_palace.tar.gz",
+    # "colosseum-exterior": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/colosseum_exterior.tar.gz",
+    # "grand-palace-brussels": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/grand_place_brussels.tar.gz",
+    # "notre-dame-facade": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/notre_dame_front_facade.tar.gz",
+    # "westminster-palace": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/palace_of_westminster.tar.gz",
+    # "pantheon-exterior": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/pantheon_exterior.tar.gz",
+    # "taj-mahal": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/taj_mahal.tar.gz",
+    # "temple-nara": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/temple_nara_japan.tar.gz",
+    # "trevi-fountain": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/trevi_fountain.tar.gz",
+    # "sacre-coeur": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/sacre_coeur.tar.gz",
     # "prague-old-town": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/prague_old_town.tar.gz",
-    "hagia-sophia": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/hagia_sophia.tar.gz",
+    # "hagia-sophia": "https://www.cs.ubc.ca/research/kmyi_data/imw2020/TrainingData/hagia_sophia.tar.gz",
 }
 
 _split_lists = {
     "brandenburg-gate": "https://nerf-w.github.io/data/selected_images/brandenburg.tsv",
-    "trevi-fountain": "https://nerf-w.github.io/data/selected_images/trevi.tsv",
-    "sacre-coeur": "https://nerf-w.github.io/data/selected_images/sacre.tsv",
+    # "trevi-fountain": "https://nerf-w.github.io/data/selected_images/trevi.tsv",
+    # "sacre-coeur": "https://nerf-w.github.io/data/selected_images/sacre.tsv",
     # "prague-old-town": "https://nerf-w.github.io/data/selected_images/prague.tsv",
-    "hagia-sophia": "https://nerf-w.github.io/data/selected_images/hagia.tsv",
-    "taj-mahal": "https://nerf-w.github.io/data/selected_images/taj_mahal.tsv",
+    # "hagia-sophia": "https://nerf-w.github.io/data/selected_images/hagia.tsv",
+    # "taj-mahal": "https://nerf-w.github.io/data/selected_images/taj_mahal.tsv",
 }
 
 
 def download_phototourism_dataset(path: str, output: Union[Path, str]):
+    '''
+    download_phototourism_dataset("phototourism/scene_name", "/path/to/output")
+    '''
     output = Path(output)
     if not path.startswith(f"{DATASET_NAME}/") and path != DATASET_NAME:
         raise DatasetNotFoundError(
@@ -128,11 +131,9 @@ def download_phototourism_dataset(path: str, output: Union[Path, str]):
         raise DatasetNotFoundError(
             f"Capture '{capture_name}' not a valid {DATASET_NAME} scene."
         )
-
     if output.exists():
         logging.info(f"Dataset {DATASET_NAME}/{capture_name} already exists in {output}")
         return
-
     url = _phototourism_downloads[capture_name]
     response = requests.get(url, stream=True)
     response.raise_for_status()
@@ -249,4 +250,3 @@ class NerfWEvaluationProtocol(EvaluationProtocol):
             for k, v in data.items():
                 acc[k] = (acc.get(k, 0) * i + v) / (i + 1)
         return acc
-
